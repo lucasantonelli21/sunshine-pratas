@@ -1,0 +1,6 @@
+@SunshineApi_HostAddress = http://localhost:5147
+
+GET {{SunshineApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
