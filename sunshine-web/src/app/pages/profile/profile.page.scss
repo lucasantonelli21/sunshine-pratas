@@ -1,0 +1,174 @@
+.app-shell {
+  min-height: 100dvh;
+  background: var(--color-primary-50);
+  color: #101828;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px clamp(20px, 4vw, 48px);
+  background: #ffffff;
+  border-bottom: 1px solid #dfe4ec;
+
+  h1 {
+    margin: 0;
+    font-size: 1.375rem;
+    line-height: 1.2;
+  }
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  img {
+    width: 92px;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+}
+
+.content {
+  width: min(100% - 40px, 960px);
+  margin: 32px auto;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #dfe4ec;
+  border-radius: 8px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+  }
+
+  p {
+    margin: 0;
+    color: #667085;
+  }
+
+  > span {
+    color: #667085;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+}
+
+.state {
+  margin: 0;
+  color: #667085;
+}
+
+form {
+  display: grid;
+  gap: 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: #344054;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+input {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #cfd6e2;
+  border-radius: 6px;
+  color: #101828;
+  font: inherit;
+}
+
+input:disabled {
+  background: #f2f4f7;
+  color: #667085;
+}
+
+input:focus {
+  outline: 3px solid color-mix(in srgb, var(--color-primary-500) 34%, transparent);
+  border-color: var(--color-primary-600);
+}
+
+.form-error,
+.form-success {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.form-error {
+  color: #b42318;
+}
+
+.form-success {
+  color: var(--color-primary-900);
+}
+
+footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--color-primary-800);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.secondary {
+  background: #ffffff;
+  color: #344054;
+  border: 1px solid #cfd6e2;
+}
+
+@media (max-width: 720px) {
+  .content {
+    width: calc(100% - 24px);
+    margin-block: 16px;
+    padding: 20px;
+  }
+
+  .grid,
+  .section-heading {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .section-heading > span {
+    white-space: normal;
+  }
+}

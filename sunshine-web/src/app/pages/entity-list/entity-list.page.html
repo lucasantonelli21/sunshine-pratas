@@ -1,0 +1,119 @@
+<main class="shell">
+  <aside>
+    <div class="brand">
+      <img class="brand-logo" src="sunshine-logo.png" alt="SunShine Pratas" />
+    </div>
+
+    <nav aria-label="Navegacao principal">
+      @for (entity of entities; track entity.id) {
+        <a [routerLink]="['/app', entity.path]" routerLinkActive="active">{{ entity.title }}</a>
+      }
+      <a routerLink="/perfil" routerLinkActive="active">Perfil</a>
+    </nav>
+
+    <button type="button" class="ghost" (click)="logout()">Sair</button>
+  </aside>
+
+  <section class="workspace">
+    <header>
+      <div>
+        <span>Cadastro</span>
+        <h1>{{ definition().title }}</h1>
+      </div>
+      <button type="button" class="secondary" (click)="loadRecords()">Atualizar</button>
+    </header>
+
+    @if (errorMessage()) {
+      <p class="alert error">{{ errorMessage() }}</p>
+    }
+
+    @if (successMessage()) {
+      <p class="alert success">{{ successMessage() }}</p>
+    }
+
+    <section class="panel form-panel" aria-labelledby="form-title">
+      <div class="panel-heading">
+        <h2 id="form-title">{{ editingRecord() ? 'Editar' : 'Novo' }} {{ definition().singular }}</h2>
+        @if (editingRecord()) {
+          <button type="button" class="ghost compact" (click)="startCreate()">Cancelar edicao</button>
+        }
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <div class="form-grid">
+          @for (field of visibleFields(); track field.key) {
+            <label [class.wide]="field.wide || field.type === 'textarea'">
+              <span>{{ field.label }} @if (field.required) { <b>*</b> }</span>
+
+              @if (field.type === 'select') {
+                <select [formControlName]="controlName(field)">
+                  @for (option of field.options ?? []; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              } @else if (field.type === 'textarea') {
+                <textarea [formControlName]="controlName(field)" rows="3"></textarea>
+              } @else {
+                <input [type]="field.type" [formControlName]="controlName(field)" />
+              }
+            </label>
+          }
+        </div>
+
+        <footer>
+          <button type="submit" [disabled]="saving()">{{ saving() ? 'Salvando...' : 'Salvar' }}</button>
+        </footer>
+      </form>
+    </section>
+
+    <section class="panel table-panel" aria-labelledby="table-title">
+      <div class="panel-heading">
+        <h2 id="table-title">Registros</h2>
+        <span>{{ records().length }} item(ns)</span>
+      </div>
+
+      @if (loading()) {
+        <p class="state">Carregando...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                @for (fieldKey of definition().tableFields; track fieldKey) {
+                  <th>{{ fieldKey }}</th>
+                }
+                <th>Acoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (record of records(); track record['id']) {
+                <tr>
+                  @for (fieldKey of definition().tableFields; track fieldKey) {
+                    <td>{{ formatValue(fieldValue(record, fieldKey)) }}</td>
+                  }
+                  <td class="actions">
+                    <button type="button" class="secondary compact" (click)="startEdit(record)">Editar</button>
+                    @for (action of definition().actions ?? []; track action.label) {
+                      @if (action.visibleWhen(record)) {
+                        <button type="button" class="secondary compact" (click)="runAction(record, action)">
+                          {{ action.label }}
+                        </button>
+                      }
+                    }
+                    <button type="button" class="danger compact" (click)="delete(record)">Excluir</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="empty" [attr.colspan]="definition().tableFields.length + 1">
+                    Nenhum registro encontrado.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </section>
+</main>

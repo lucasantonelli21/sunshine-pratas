@@ -1,0 +1,190 @@
+import { EntityDefinition, SelectOption } from './entity.models';
+
+const roleOptions: SelectOption[] = [
+  { value: 'ADMIN', label: 'Administrador' },
+  { value: 'MANAGER', label: 'Gerente' },
+  { value: 'USER', label: 'Usuario' },
+];
+
+const productCategoryOptions: SelectOption[] = [
+  { value: 'ELECTRONICS', label: 'Eletronicos' },
+  { value: 'CLOTHING', label: 'Vestuario' },
+  { value: 'FOOD_AND_BEVERAGE', label: 'Alimentacao e bebidas' },
+  { value: 'HEALTH_AND_BEAUTY', label: 'Saude e beleza' },
+  { value: 'HOME_AND_FURNITURE', label: 'Casa e moveis' },
+  { value: 'OFFICE_SUPPLIES', label: 'Material de escritorio' },
+  { value: 'RAW_MATERIAL', label: 'Materia-prima' },
+  { value: 'SERVICE', label: 'Servico' },
+  { value: 'OTHER', label: 'Outros' },
+];
+
+const paymentMethodOptions: SelectOption[] = [
+  { value: '', label: 'Nao informado' },
+  { value: 'CASH', label: 'Dinheiro' },
+  { value: 'CREDIT_CARD', label: 'Cartao de credito' },
+  { value: 'DEBIT_CARD', label: 'Cartao de debito' },
+  { value: 'BANK_TRANSFER', label: 'Transferencia bancaria' },
+  { value: 'PIX', label: 'Pix' },
+  { value: 'CHECK', label: 'Cheque' },
+  { value: 'OTHER', label: 'Outro' },
+];
+
+const documentTypeOptions: SelectOption[] = [
+  { value: 'CPF', label: 'CPF' },
+  { value: 'CNPJ', label: 'CNPJ' },
+];
+
+const addressFields = [
+  { key: 'address.street', label: 'Logradouro', type: 'text' as const },
+  { key: 'address.number', label: 'Numero', type: 'text' as const },
+  { key: 'address.complement', label: 'Complemento', type: 'text' as const },
+  { key: 'address.neighborhood', label: 'Bairro', type: 'text' as const },
+  { key: 'address.city', label: 'Cidade', type: 'text' as const },
+  { key: 'address.state', label: 'UF', type: 'text' as const, minLength: 2 },
+  { key: 'address.zipCode', label: 'CEP', type: 'text' as const },
+  { key: 'address.country', label: 'Pais', type: 'text' as const },
+];
+
+export const ENTITY_DEFINITIONS: EntityDefinition[] = [
+  {
+    id: 'users',
+    title: 'Usuarios',
+    singular: 'Usuario',
+    path: 'usuarios',
+    listPath: '/users',
+    createPath: '/users',
+    updatePath: (id) => `/users/${id}`,
+    deletePath: (id) => `/users/${id}`,
+    tableFields: ['name', 'email', 'role', 'active', 'createdAt'],
+    fields: [
+      { key: 'name', label: 'Nome', type: 'text', required: true, table: true },
+      { key: 'email', label: 'Email', type: 'email', required: true, table: true },
+      { key: 'password', label: 'Senha', type: 'password', required: true, minLength: 6, hideOnEdit: true },
+      { key: 'role', label: 'Perfil', type: 'select', required: true, options: roleOptions, table: true },
+    ],
+  },
+  {
+    id: 'products',
+    title: 'Produtos',
+    singular: 'Produto',
+    path: 'produtos',
+    listPath: '/products',
+    createPath: '/products',
+    updatePath: (id) => `/products/${id}`,
+    deletePath: (id) => `/products/${id}`,
+    tableFields: ['name', 'sku', 'category', 'price', 'stock', 'active'],
+    fields: [
+      { key: 'name', label: 'Nome', type: 'text', required: true, table: true },
+      { key: 'description', label: 'Descricao', type: 'textarea', wide: true },
+      { key: 'sku', label: 'SKU', type: 'text', required: true, table: true },
+      { key: 'price', label: 'Preco', type: 'number', required: true, min: 0.01, table: true },
+      { key: 'stock', label: 'Estoque', type: 'number', required: true, min: 0, table: true },
+      { key: 'category', label: 'Categoria', type: 'select', required: true, options: productCategoryOptions, table: true },
+    ],
+  },
+  {
+    id: 'expenses',
+    title: 'Despesas',
+    singular: 'Despesa',
+    path: 'despesas',
+    listPath: '/expenses',
+    createPath: '/expenses',
+    updatePath: (id) => `/expenses/${id}`,
+    deletePath: (id) => `/expenses/${id}`,
+    tableFields: ['description', 'amount', 'dueDate', 'status', 'paymentMethod', 'userName'],
+    fields: [
+      { key: 'description', label: 'Descricao', type: 'text', required: true, table: true },
+      { key: 'amount', label: 'Valor', type: 'number', required: true, min: 0.01, table: true },
+      { key: 'dueDate', label: 'Vencimento', type: 'date', required: true, table: true },
+      { key: 'paymentMethod', label: 'Metodo de pagamento', type: 'select', options: paymentMethodOptions, table: true },
+      { key: 'category', label: 'Categoria', type: 'text' },
+      { key: 'notes', label: 'Observacoes', type: 'textarea', wide: true },
+      { key: 'userId', label: 'ID do usuario', type: 'text', required: true },
+    ],
+    actions: [
+      {
+        label: 'Marcar paga',
+        endpointSuffix: '/pay',
+        method: 'PATCH',
+        visibleWhen: (record) => record['status'] !== 'PAID',
+      },
+    ],
+  },
+  {
+    id: 'incomes',
+    title: 'Receitas',
+    singular: 'Receita',
+    path: 'receitas',
+    listPath: '/incomes',
+    createPath: '/incomes',
+    updatePath: (id) => `/incomes/${id}`,
+    deletePath: (id) => `/incomes/${id}`,
+    tableFields: ['description', 'amount', 'expectedDate', 'status', 'paymentMethod', 'source'],
+    fields: [
+      { key: 'description', label: 'Descricao', type: 'text', required: true, table: true },
+      { key: 'amount', label: 'Valor', type: 'number', required: true, min: 0.01, table: true },
+      { key: 'expectedDate', label: 'Data esperada', type: 'date', required: true, table: true },
+      { key: 'paymentMethod', label: 'Metodo de pagamento', type: 'select', options: paymentMethodOptions, table: true },
+      { key: 'source', label: 'Origem', type: 'text', table: true },
+      { key: 'category', label: 'Categoria', type: 'text' },
+      { key: 'notes', label: 'Observacoes', type: 'textarea', wide: true },
+      { key: 'userId', label: 'ID do usuario', type: 'text', required: true },
+    ],
+    actions: [
+      {
+        label: 'Marcar recebida',
+        endpointSuffix: '/receive',
+        method: 'PATCH',
+        visibleWhen: (record) => record['status'] !== 'RECEIVED',
+      },
+    ],
+  },
+  {
+    id: 'customers',
+    title: 'Clientes',
+    singular: 'Cliente',
+    path: 'clientes',
+    listPath: '/customers',
+    createPath: '/customers',
+    updatePath: (id) => `/customers/${id}`,
+    deletePath: (id) => `/customers/${id}`,
+    tableFields: ['name', 'email', 'phone', 'document', 'documentType', 'active'],
+    fields: [
+      { key: 'name', label: 'Nome', type: 'text', required: true, table: true },
+      { key: 'email', label: 'Email', type: 'email', table: true },
+      { key: 'phone', label: 'Telefone', type: 'text', table: true },
+      { key: 'mobile', label: 'Celular', type: 'text' },
+      { key: 'document', label: 'Documento', type: 'text', required: true, table: true },
+      { key: 'documentType', label: 'Tipo do documento', type: 'select', required: true, options: documentTypeOptions, table: true },
+      ...addressFields,
+      { key: 'notes', label: 'Observacoes', type: 'textarea', wide: true },
+    ],
+  },
+  {
+    id: 'suppliers',
+    title: 'Fornecedores',
+    singular: 'Fornecedor',
+    path: 'fornecedores',
+    listPath: '/suppliers',
+    createPath: '/suppliers',
+    updatePath: (id) => `/suppliers/${id}`,
+    deletePath: (id) => `/suppliers/${id}`,
+    tableFields: ['name', 'tradeName', 'email', 'phone', 'document', 'active'],
+    fields: [
+      { key: 'name', label: 'Razao social', type: 'text', required: true, table: true },
+      { key: 'tradeName', label: 'Nome fantasia', type: 'text', table: true },
+      { key: 'email', label: 'Email', type: 'email', table: true },
+      { key: 'phone', label: 'Telefone', type: 'text', table: true },
+      { key: 'document', label: 'Documento', type: 'text', required: true, table: true },
+      { key: 'documentType', label: 'Tipo do documento', type: 'select', required: true, options: documentTypeOptions },
+      { key: 'contactName', label: 'Contato', type: 'text' },
+      { key: 'contactEmail', label: 'Email do contato', type: 'email' },
+      { key: 'contactPhone', label: 'Telefone do contato', type: 'text' },
+      ...addressFields,
+      { key: 'paymentTerms', label: 'Condicoes de pagamento', type: 'text', wide: true },
+      { key: 'notes', label: 'Observacoes', type: 'textarea', wide: true },
+    ],
+  },
+];
+
+export const entityByPath = new Map(ENTITY_DEFINITIONS.map((definition) => [definition.path, definition]));
