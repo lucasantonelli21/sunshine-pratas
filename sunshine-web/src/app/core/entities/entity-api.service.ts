@@ -14,6 +14,10 @@ export class EntityApiService {
     return this.http.get<Record<string, unknown>[]>(`${this.apiBaseUrl}${definition.listPath}`);
   }
 
+  getById(definition: EntityDefinition, id: string): Observable<Record<string, unknown>> {
+    return this.http.get<Record<string, unknown>>(`${this.apiBaseUrl}${definition.updatePath(id)}`);
+  }
+
   create(definition: EntityDefinition, payload: Record<string, unknown>): Observable<Record<string, unknown>> {
     return this.http.post<Record<string, unknown>>(`${this.apiBaseUrl}${definition.createPath}`, payload);
   }

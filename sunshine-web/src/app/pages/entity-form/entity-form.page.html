@@ -1,0 +1,63 @@
+<div class="shell">
+  <app-sidebar />
+
+  <main class="workspace">
+    <header class="page-header">
+      <div class="breadcrumb">
+        <a [routerLink]="['/app', definition().path]">{{ definition().title }}</a>
+        <app-icon name="chevron-right" [size]="16" />
+        <span>{{ isEditing() ? 'Editar' : 'Novo' }} {{ definition().singular }}</span>
+      </div>
+      <h1>{{ isEditing() ? 'Editar' : 'Novo' }} {{ definition().singular }}</h1>
+    </header>
+
+    <div class="form-card">
+      @if (loading()) {
+        <p class="state">Carregando...</p>
+      } @else {
+        @if (errorMessage()) {
+          <div class="alert alert-error">
+            <app-icon name="alert-circle" [size]="18" />
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+          <div class="form-grid">
+            @for (field of visibleFields(); track field.key) {
+              <label [class.wide]="field.wide || field.type === 'textarea'">
+                <span class="field-label">
+                  {{ field.label }}
+                  @if (field.required) { <b class="required">*</b> }
+                </span>
+
+                @if (field.type === 'select') {
+                  <select [formControlName]="controlName(field)">
+                    @for (option of field.options ?? []; track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                } @else if (field.type === 'textarea') {
+                  <textarea [formControlName]="controlName(field)" rows="4"></textarea>
+                } @else {
+                  <input [type]="field.type" [formControlName]="controlName(field)" />
+                }
+
+                @if (form.controls[controlName(field)]?.touched && form.controls[controlName(field)]?.invalid) {
+                  <small class="field-error">Campo obrigatorio ou invalido.</small>
+                }
+              </label>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancel()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="saving()">
+              {{ saving() ? 'Salvando...' : 'Salvar ' + definition().singular }}
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </main>
+</div>

@@ -18,9 +18,10 @@ export interface AuthSession {
 
 export interface LoginResponse {
   token: string;
-  type: 'Bearer' | string;
-  userId: string;
-  name: string;
-  email: string;
-  role: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }

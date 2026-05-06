@@ -34,10 +34,10 @@ export class AuthService {
       map((response) => ({
         accessToken: response.token,
         user: {
-          id: response.userId,
-          name: response.name,
-          email: response.email,
-          role: response.role,
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          role: response.user.role,
         },
       })),
       tap((session) => this.setSession(session)),

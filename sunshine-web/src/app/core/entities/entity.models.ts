@@ -28,6 +28,7 @@ export interface EntityAction {
 
 export interface EntityDefinition {
   id: string;
+  icon: string;
   title: string;
   singular: string;
   path: string;

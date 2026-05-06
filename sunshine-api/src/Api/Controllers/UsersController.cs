@@ -13,6 +13,7 @@ public class UsersController : ControllerBase
 
     public UsersController(IUserService service) => _service = service;
 
+    [HttpPost]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] CreateUserDto dto, CancellationToken ct)
     {
