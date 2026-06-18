@@ -34,7 +34,7 @@ $white: #ffffff;
   display: flex;
   align-items: center;
   gap: 24px;
-  height: 76px;
+  height: 84px;
 }
 
 .navbar-brand {
@@ -43,7 +43,7 @@ $white: #ffffff;
   flex-shrink: 0;
 
   img {
-    height: 56px;
+    height: 64px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -276,22 +276,18 @@ $white: #ffffff;
 
 .hero-image-wrap {
   width: 100%;
-  max-width: 420px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 30% 30%, #c2f1f1 0%, #9ecccc 40%, #597575 100%);
+  max-width: 460px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 32px 80px rgb(89 117 117 / 30%);
-  overflow: hidden;
+  filter: drop-shadow(0 24px 60px rgb(89 117 117 / 28%));
 }
 
 .hero-logo {
-  width: 72%;
-  height: 72%;
-  object-fit: contain;
+  width: 100%;
+  height: auto;
   display: block;
+  object-fit: contain;
 }
 
 .hero-badge {
@@ -669,12 +665,11 @@ $white: #ffffff;
 
 .footer-brand {
   img {
-    height: 48px;
+    height: 64px;
     width: auto;
     display: block;
     object-fit: contain;
-    border-radius: 8px;
-    opacity: 0.85;
+    border-radius: 10px;
   }
 }
 
