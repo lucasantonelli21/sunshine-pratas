@@ -36,7 +36,7 @@ export class LoginPage {
 
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/app/produtos';
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/painel/produtos';
         void this.router.navigateByUrl(returnUrl);
       },
       error: () => {

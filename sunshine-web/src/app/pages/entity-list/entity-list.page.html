@@ -40,7 +40,7 @@
         <app-empty-state
           [icon]="definition().icon"
           [title]="'Nenhum ' + definition().singular.toLowerCase() + ' cadastrado'"
-          [message]="'Adicione o primeiro ' + definition().singular.toLowerCase() + ' para comecar.'"
+          [message]="'Adicione o primeiro ' + definition().singular.toLowerCase() + ' para começar.'"
           [actionLabel]="'Novo ' + definition().singular"
           (action)="openCreate()"
         />
@@ -54,16 +54,32 @@
             <thead>
               <tr>
                 @for (key of definition().tableFields; track key) {
-                  <th>{{ fieldLabel(key) }}</th>
+                  @if (isImagesField(key)) {
+                    <th class="col-thumb">Foto</th>
+                  } @else {
+                    <th>{{ fieldLabel(key) }}</th>
+                  }
                 }
-                <th class="col-actions">Acoes</th>
+                <th class="col-actions">Ações</th>
               </tr>
             </thead>
             <tbody>
               @for (record of records(); track record['id']) {
                 <tr>
                   @for (key of definition().tableFields; track key) {
-                    <td>{{ formatValue(fieldValue(record, key)) }}</td>
+                    @if (isImagesField(key)) {
+                      <td class="col-thumb">
+                        @if (firstImageUrl(record); as url) {
+                          <img [src]="url" alt="Foto" class="record-thumb" />
+                        } @else {
+                          <div class="thumb-placeholder">
+                            <app-icon name="image" [size]="18" />
+                          </div>
+                        }
+                      </td>
+                    } @else {
+                      <td>{{ formatValue(fieldValue(record, key)) }}</td>
+                    }
                   }
                   <td class="col-actions">
                     <div class="row-actions">
@@ -114,7 +130,7 @@
 
         <form [formGroup]="form" (ngSubmit)="save()" novalidate id="modal-form">
           <div class="form-grid">
-            @for (field of visibleFields(); track field.key) {
+            @for (field of formFields(); track field.key) {
               <label [class.wide]="field.wide || field.type === 'textarea'">
                 <span class="field-label">
                   {{ field.label }}
@@ -134,11 +150,23 @@
                 }
 
                 @if (form.controls[controlName(field)]?.touched && form.controls[controlName(field)]?.invalid) {
-                  <small class="field-error">Campo obrigatorio ou invalido.</small>
+                  <small class="field-error">Campo obrigatório ou inválido.</small>
                 }
               </label>
             }
           </div>
+
+          @for (field of visibleFields(); track field.key) {
+            @if (field.type === 'images') {
+              <div class="images-section">
+                <span class="field-label">{{ field.label }}</span>
+                <app-image-manager
+                  [images]="pendingImages()"
+                  (imagesChange)="pendingImages.set($event)"
+                />
+              </div>
+            }
+          }
         </form>
       </div>
 

@@ -51,7 +51,7 @@ export class AuthService {
   logout(): void {
     this.sessionSignal.set(null);
     this.storage?.removeItem(SESSION_KEY);
-    void this.router.navigateByUrl('/login');
+    void this.router.navigateByUrl('/painel/login');
   }
 
   updateUser(user: User): void {

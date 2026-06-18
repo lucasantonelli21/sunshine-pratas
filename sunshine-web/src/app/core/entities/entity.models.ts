@@ -1,4 +1,4 @@
-export type FieldType = 'text' | 'email' | 'password' | 'number' | 'date' | 'select' | 'textarea';
+export type FieldType = 'text' | 'email' | 'password' | 'number' | 'date' | 'select' | 'textarea' | 'images';
 
 export interface SelectOption {
   value: string;

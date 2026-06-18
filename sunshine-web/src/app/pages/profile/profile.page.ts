@@ -4,11 +4,13 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../core/auth/auth.service';
 import { User } from '../../core/models/user.model';
 import { ProfileService } from '../../core/services/profile.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SidebarComponent, IconComponent],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.scss',
 })

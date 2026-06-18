@@ -1,0 +1,227 @@
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="navbar-inner">
+    <a routerLink="/" class="navbar-brand">
+      <img src="sunshine-logo.png" alt="SunShine Pratas" />
+    </a>
+
+    <nav class="navbar-links" aria-label="Navegação">
+      <button type="button" (click)="scrollTo('colecao')">Coleção</button>
+      <button type="button" (click)="scrollTo('diferenciais')">Por que nós</button>
+      <button type="button" (click)="scrollTo('contato')">Contato</button>
+    </nav>
+
+    <div class="navbar-cta">
+      <a routerLink="/painel/login" class="btn-painel">
+        <app-icon name="layout-dashboard" [size]="16" />
+        Painel
+      </a>
+    </div>
+
+    <button type="button" class="menu-toggle" (click)="toggleMenu()" aria-label="Menu">
+      <app-icon [name]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" />
+    </button>
+  </div>
+
+  @if (mobileMenuOpen()) {
+    <nav class="mobile-nav" aria-label="Menu mobile">
+      <button type="button" (click)="scrollTo('colecao')">Coleção</button>
+      <button type="button" (click)="scrollTo('diferenciais')">Por que nós</button>
+      <button type="button" (click)="scrollTo('contato')">Contato</button>
+      <a routerLink="/painel/login" class="btn-painel-mobile">Acessar Painel</a>
+    </nav>
+  }
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-eyebrow">Joias artesanais desde 2010</span>
+    <h1 class="hero-title">
+      Beleza que<br />
+      <em>conta histórias</em>
+    </h1>
+    <p class="hero-sub">
+      Peças únicas em prata 925 e ouro, criadas com cuidado para
+      momentos que merecem ser lembrados para sempre.
+    </p>
+    <div class="hero-actions">
+      <button type="button" class="btn-hero-primary" (click)="scrollTo('colecao')">
+        Ver coleção
+        <app-icon name="arrow-down" [size]="18" />
+      </button>
+      <button type="button" class="btn-hero-ghost" (click)="scrollTo('diferenciais')">
+        Nossa história
+      </button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-image-wrap">
+      <img src="sunshine-logo-clean.png" alt="SunShine Pratas" class="hero-logo" />
+    </div>
+    <div class="hero-badge hero-badge-1">
+      <app-icon name="award" [size]="18" />
+      <span>Prata 925 Certificada</span>
+    </div>
+    <div class="hero-badge hero-badge-2">
+      <app-icon name="shield-check" [size]="18" />
+      <span>Garantia de 1 ano</span>
+    </div>
+  </div>
+</section>
+
+<!-- COLLECTION -->
+<section class="section" id="colecao">
+  <div class="section-inner">
+    <div class="section-heading">
+      <span class="section-eyebrow">Catálogo</span>
+      <h2>Nossa Coleção</h2>
+      <p>Descubra peças que expressam elegância e personalidade</p>
+    </div>
+
+    @if (loadingProducts()) {
+      <div class="products-loading">
+        <div class="loading-spinner"></div>
+        <span>Carregando coleção...</span>
+      </div>
+    } @else if (products().length === 0) {
+      <div class="products-empty">
+        <app-icon name="gem" [size]="48" />
+        <p>Em breve novidades incríveis</p>
+      </div>
+    } @else {
+      <div class="products-grid">
+        @for (product of products(); track product.id) {
+          <article class="product-card">
+            <div class="product-image">
+              @if (firstImage(product); as url) {
+                <img [src]="url" [alt]="product.name" loading="lazy" />
+              } @else {
+                <div class="product-image-placeholder">
+                  <app-icon name="gem" [size]="40" />
+                </div>
+              }
+              <div class="product-badge">{{ product.typeLabel }}</div>
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <div class="product-meta">
+                <span>{{ product.materialLabel }}</span>
+                <span>{{ product.genderLabel }}</span>
+              </div>
+              @if (product.description) {
+                <p class="product-desc">{{ product.description }}</p>
+              }
+              <div class="product-footer">
+                <span class="product-price">
+                  {{ product.price | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
+                </span>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section section-dark" id="diferenciais">
+  <div class="section-inner">
+    <div class="section-heading light">
+      <span class="section-eyebrow">Por que escolher a Sunshine</span>
+      <h2>Qualidade em cada detalhe</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <app-icon name="gem" [size]="28" />
+        </div>
+        <h3>Materiais certificados</h3>
+        <p>Trabalhamos exclusivamente com prata 925, ouro 18k e materiais com procedência garantida.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <app-icon name="hand-heart" [size]="28" />
+        </div>
+        <h3>Feito à mão</h3>
+        <p>Cada peça é criada artesanalmente, garantindo unicidade e atenção aos mínimos detalhes.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <app-icon name="shield-check" [size]="28" />
+        </div>
+        <h3>Garantia de 1 ano</h3>
+        <p>Todas as peças acompanham garantia contra defeitos de fabricação por 12 meses.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <app-icon name="package" [size]="28" />
+        </div>
+        <h3>Embalagem especial</h3>
+        <p>Enviamos em caixas elegantes, perfeitas para presentes ou para guardar sua joia com cuidado.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contato">
+  <div class="section-inner contact-inner">
+    <div class="section-heading">
+      <span class="section-eyebrow">Fale conosco</span>
+      <h2>Entre em contato</h2>
+      <p>Tire dúvidas, solicite orçamentos ou faça pedidos personalizados</p>
+    </div>
+
+    <div class="contact-grid">
+      <a class="contact-card" href="https://wa.me/55" target="_blank" rel="noopener">
+        <div class="contact-icon">
+          <app-icon name="message-circle" [size]="28" />
+        </div>
+        <div>
+          <h3>WhatsApp</h3>
+          <p>Atendimento rápido pelo WhatsApp</p>
+        </div>
+        <app-icon name="arrow-right" [size]="18" class="contact-arrow" />
+      </a>
+
+      <a class="contact-card" href="mailto:contato@sunshinepratas.com.br">
+        <div class="contact-icon">
+          <app-icon name="mail" [size]="28" />
+        </div>
+        <div>
+          <h3>E-mail</h3>
+          <p>contato&#64;sunshinepratas.com.br</p>
+        </div>
+        <app-icon name="arrow-right" [size]="18" class="contact-arrow" />
+      </a>
+
+      <a class="contact-card" href="https://instagram.com/sunshinepratas" target="_blank" rel="noopener">
+        <div class="contact-icon">
+          <app-icon name="instagram" [size]="28" />
+        </div>
+        <div>
+          <h3>Instagram</h3>
+          <p>&#64;sunshinepratas</p>
+        </div>
+        <app-icon name="arrow-right" [size]="18" class="contact-arrow" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="sunshine-logo.png" alt="SunShine Pratas" />
+    </div>
+    <p class="footer-copy">© {{ currentYear }} SunShine Pratas. Todos os direitos reservados.</p>
+    <a routerLink="/painel/login" class="footer-painel">Painel Administrativo</a>
+  </div>
+</footer>

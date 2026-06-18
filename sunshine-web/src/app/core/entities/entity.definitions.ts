@@ -82,7 +82,7 @@ export const ENTITY_DEFINITIONS: EntityDefinition[] = [
     createPath: '/products',
     updatePath: (id) => `/products/${id}`,
     deletePath: (id) => `/products/${id}`,
-    tableFields: ['name', 'typeLabel', 'materialLabel', 'price', 'stock', 'isActive'],
+    tableFields: ['images', 'name', 'typeLabel', 'materialLabel', 'price', 'stock', 'isActive'],
     fields: [
       { key: 'name', label: 'Nome', type: 'text', required: true, table: true },
       { key: 'description', label: 'Descrição', type: 'textarea', wide: true },
@@ -91,6 +91,7 @@ export const ENTITY_DEFINITIONS: EntityDefinition[] = [
       { key: 'type', label: 'Tipo', type: 'select', required: true, options: productTypeOptions, table: true },
       { key: 'gender', label: 'Gênero', type: 'select', required: true, options: productGenderOptions },
       { key: 'material', label: 'Material', type: 'select', required: true, options: productMaterialOptions, table: true },
+      { key: 'images', label: 'Imagens', type: 'images', wide: true },
     ],
     actions: [
       {

@@ -3,9 +3,9 @@
     <img src="sunshine-logo.png" alt="SunShine Pratas" />
   </div>
 
-  <nav aria-label="Navegacao principal">
+  <nav aria-label="Navegação principal">
     @for (entity of entities; track entity.id) {
-      <a [routerLink]="['/app', entity.path]" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a [routerLink]="['/painel', entity.path]" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <app-icon [name]="entity.icon" [size]="18" />
         {{ entity.title }}
       </a>
@@ -13,7 +13,7 @@
   </nav>
 
   <div class="sidebar-footer">
-    <a routerLink="/perfil" routerLinkActive="active" class="profile-link">
+    <a routerLink="/painel/perfil" routerLinkActive="active" class="profile-link">
       <app-icon name="user" [size]="18" />
       <span class="profile-name">{{ userName() }}</span>
     </a>

@@ -8,12 +8,13 @@ import { ENTITY_DEFINITIONS, entityByPath } from '../../core/entities/entity.def
 import { EntityAction, EntityDefinition, EntityField } from '../../core/entities/entity.models';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { ImageManagerComponent, ManagedImage } from '../../shared/components/image-manager/image-manager.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-entity-list-page',
   standalone: true,
-  imports: [ReactiveFormsModule, SidebarComponent, EmptyStateComponent, IconComponent],
+  imports: [ReactiveFormsModule, SidebarComponent, EmptyStateComponent, IconComponent, ImageManagerComponent],
   templateUrl: './entity-list.page.html',
   styleUrl: './entity-list.page.scss',
 })
@@ -32,11 +33,14 @@ export class EntityListPage implements OnDestroy {
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
   readonly modalError = signal<string | null>(null);
+  readonly pendingImages = signal<ManagedImage[]>([]);
 
   readonly visibleFields = computed(() => {
     const editing = Boolean(this.editingRecord());
     return this.definition().fields.filter((f) => !(editing && f.hideOnEdit));
   });
+
+  readonly formFields = computed(() => this.visibleFields().filter((f) => f.type !== 'images'));
 
   readonly form: FormGroup = this.formBuilder.group({});
 
@@ -74,6 +78,7 @@ export class EntityListPage implements OnDestroy {
 
   openCreate(): void {
     this.editingRecord.set(null);
+    this.pendingImages.set([]);
     this.rebuildForm();
     this.modalError.set(null);
     this.showModal.set(true);
@@ -81,6 +86,18 @@ export class EntityListPage implements OnDestroy {
 
   openEdit(record: Record<string, unknown>): void {
     this.editingRecord.set(record);
+    const rawImages = record['images'];
+    if (Array.isArray(rawImages)) {
+      this.pendingImages.set(
+        (rawImages as Array<{ id?: string; url: string; order: number }>).map((img, i) => ({
+          id: img.id ?? crypto.randomUUID(),
+          url: img.url,
+          order: img.order ?? i,
+        })),
+      );
+    } else {
+      this.pendingImages.set([]);
+    }
     this.rebuildForm(record);
     this.modalError.set(null);
     this.showModal.set(true);
@@ -167,6 +184,17 @@ export class EntityListPage implements OnDestroy {
     }, record);
   }
 
+  firstImageUrl(record: Record<string, unknown>): string | null {
+    const images = record['images'];
+    if (!Array.isArray(images) || images.length === 0) return null;
+    const first = images[0] as { url?: string };
+    return first?.url ?? null;
+  }
+
+  isImagesField(key: string): boolean {
+    return this.definition().fields.find((f) => f.key === key)?.type === 'images';
+  }
+
   formatValue(value: unknown): string {
     if (value === null || value === undefined || value === '') return '-';
     if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
@@ -181,7 +209,7 @@ export class EntityListPage implements OnDestroy {
       this.form.removeControl(key);
     }
 
-    for (const field of this.definition().fields) {
+    for (const field of this.formFields()) {
       if (record && field.hideOnEdit) continue;
 
       this.form.addControl(
@@ -209,7 +237,6 @@ export class EntityListPage implements OnDestroy {
   }
 
   private resolveFromFlatRecord(record: Record<string, unknown>, key: string): unknown {
-    // For address.street → try addressStreet or address_street from nested address object
     const parts = key.split('.');
     if (parts.length === 2 && parts[0] === 'address') {
       const nested = record['address'] as Record<string, unknown> | undefined;
@@ -221,10 +248,15 @@ export class EntityListPage implements OnDestroy {
   private buildPayload(): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
 
-    for (const field of this.visibleFields()) {
+    for (const field of this.formFields()) {
       const raw = this.form.controls[field.key].value;
       const value = field.type === 'number' && raw !== '' ? Number(raw) : (raw === '' ? null : raw);
       payload[field.key] = value;
+    }
+
+    const hasImagesField = this.definition().fields.some((f) => f.type === 'images');
+    if (hasImagesField) {
+      payload['images'] = this.pendingImages().map((img, i) => ({ url: img.url, order: i }));
     }
 
     return payload;
