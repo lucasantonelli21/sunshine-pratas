@@ -19,19 +19,45 @@
     </div>
 
     <button type="button" class="menu-toggle" (click)="toggleMenu()" aria-label="Menu">
-      <app-icon [name]="mobileMenuOpen() ? 'x' : 'menu'" [size]="22" />
+      <app-icon name="menu" [size]="22" />
+    </button>
+  </div>
+</header>
+
+<!-- MOBILE SIDEBAR -->
+@if (mobileMenuOpen()) {
+  <div class="mobile-overlay" (click)="toggleMenu()" aria-hidden="true"></div>
+}
+<aside class="mobile-sidebar" [class.open]="mobileMenuOpen()" aria-label="Menu mobile">
+  <div class="mobile-sidebar-header">
+    <img src="sunshine-logo.png" alt="SunShine Pratas" />
+    <button type="button" class="mobile-sidebar-close" (click)="toggleMenu()" aria-label="Fechar menu">
+      <app-icon name="x" [size]="22" />
     </button>
   </div>
 
-  @if (mobileMenuOpen()) {
-    <nav class="mobile-nav" aria-label="Menu mobile">
-      <button type="button" (click)="scrollTo('colecao')">Coleção</button>
-      <button type="button" (click)="scrollTo('diferenciais')">Por que nós</button>
-      <button type="button" (click)="scrollTo('contato')">Contato</button>
-      <a routerLink="/painel/login" class="btn-painel-mobile">Acessar Painel</a>
-    </nav>
-  }
-</header>
+  <nav class="mobile-sidebar-nav">
+    <button type="button" (click)="scrollTo('colecao')">
+      <app-icon name="gem" [size]="20" />
+      Coleção
+    </button>
+    <button type="button" (click)="scrollTo('diferenciais')">
+      <app-icon name="award" [size]="20" />
+      Por que nós
+    </button>
+    <button type="button" (click)="scrollTo('contato')">
+      <app-icon name="message-circle" [size]="20" />
+      Contato
+    </button>
+  </nav>
+
+  <div class="mobile-sidebar-footer">
+    <a routerLink="/painel/login" class="btn-painel-mobile">
+      <app-icon name="layout-dashboard" [size]="18" />
+      Acessar Painel
+    </a>
+  </div>
+</aside>
 
 <!-- HERO -->
 <section class="hero">
