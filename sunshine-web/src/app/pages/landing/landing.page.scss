@@ -34,7 +34,7 @@ $white: #ffffff;
   display: flex;
   align-items: center;
   gap: 24px;
-  height: 68px;
+  height: 76px;
 }
 
 .navbar-brand {
@@ -43,7 +43,7 @@ $white: #ffffff;
   flex-shrink: 0;
 
   img {
-    height: 40px;
+    height: 56px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -669,12 +669,12 @@ $white: #ffffff;
 
 .footer-brand {
   img {
-    height: 36px;
+    height: 48px;
     width: auto;
     display: block;
     object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.8;
+    border-radius: 8px;
+    opacity: 0.85;
   }
 }
 
