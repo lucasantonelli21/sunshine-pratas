@@ -13,10 +13,6 @@
         <h2 id="profile-title">Dados do perfil</h2>
         <p>Atualize seus dados cadastrais.</p>
       </div>
-
-      @if (lastUpdatedAt()) {
-        <span>Consulta: {{ lastUpdatedAt() | date: 'HH:mm:ss' }}</span>
-      }
     </div>
 
     @if (loading()) {
@@ -30,23 +26,13 @@
           </label>
 
           <label>
-            <span>Email</span>
+            <span>E-mail</span>
             <input type="email" formControlName="email" autocomplete="email" />
           </label>
 
           <label>
-            <span>Telefone</span>
-            <input type="tel" formControlName="phone" autocomplete="tel" />
-          </label>
-
-          <label>
-            <span>Documento</span>
-            <input type="text" formControlName="document" />
-          </label>
-
-          <label class="wide">
-            <span>Empresa</span>
-            <input type="text" formControlName="company" autocomplete="organization" />
+            <span>Nova senha</span>
+            <input type="password" formControlName="password" autocomplete="new-password" placeholder="Deixe em branco para não alterar" />
           </label>
         </div>
 

@@ -2,12 +2,13 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, map, Observable, tap, throwError } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 
 import { API_BASE_URL } from '../api.config';
-import { AuthSession, LoginRequest, LoginResponse, User } from './auth.models';
+import { AuthSession, LoginRequest, LoginResponse } from '../models/auth.model';
+import { User } from '../models/user.model';
 
-const SESSION_STORAGE_KEY = 'erp.session';
+const SESSION_KEY = 'sunshine.session';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -29,86 +30,57 @@ export class AuthService {
     return Boolean(this.token);
   }
 
+  get currentUser(): User | null {
+    return this.sessionSignal()?.user ?? null;
+  }
+
+  get isAdmin(): boolean {
+    return this.currentUser?.role === 'admin';
+  }
+
   login(credentials: LoginRequest): Observable<AuthSession> {
     return this.http.post<LoginResponse>(`${this.apiBaseUrl}/auth/login`, credentials).pipe(
       map((response) => ({
         accessToken: response.token,
-        user: {
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          role: response.user.role,
-        },
+        user: response.user,
       })),
-      tap((session) => this.setSession(session)),
-      catchError((error: unknown) => throwError(() => error)),
+      tap((session) => this.persistSession(session)),
     );
   }
 
   logout(): void {
     this.sessionSignal.set(null);
-    this.storage?.removeItem(SESSION_STORAGE_KEY);
+    this.storage?.removeItem(SESSION_KEY);
     void this.router.navigateByUrl('/login');
   }
 
   updateUser(user: User): void {
     const session = this.sessionSignal();
-
-    if (!session) {
-      return;
-    }
-
-    this.setSession({ ...session, user });
+    if (!session) return;
+    this.persistSession({ ...session, user });
   }
 
-  private setSession(session: AuthSession): void {
+  private persistSession(session: AuthSession): void {
     this.sessionSignal.set(session);
-    this.storage?.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    this.storage?.setItem(SESSION_KEY, JSON.stringify(session));
   }
 
   private restoreSession(): AuthSession | null {
-    const rawSession = this.storage?.getItem(SESSION_STORAGE_KEY);
-
-    if (!rawSession) {
-      return null;
-    }
+    const raw = this.storage?.getItem(SESSION_KEY);
+    if (!raw) return null;
 
     try {
-      return this.normalizeSession(JSON.parse(rawSession));
+      const parsed = JSON.parse(raw) as Partial<AuthSession>;
+      if (!parsed.accessToken || !parsed.user?.email) return null;
+      return parsed as AuthSession;
     } catch {
-      this.storage?.removeItem(SESSION_STORAGE_KEY);
+      this.storage?.removeItem(SESSION_KEY);
       return null;
     }
-  }
-
-  private normalizeSession(value: unknown): AuthSession | null {
-    if (!value || typeof value !== 'object') {
-      return null;
-    }
-
-    const candidate = value as Partial<AuthSession>;
-
-    if (!candidate.accessToken || !candidate.user?.email) {
-      return null;
-    }
-
-    return {
-      accessToken: candidate.accessToken,
-      refreshToken: candidate.refreshToken,
-      user: {
-        id: String(candidate.user.id ?? ''),
-        name: String(candidate.user.name ?? ''),
-        email: candidate.user.email,
-        role: candidate.user.role,
-      },
-    };
   }
 
   private get storage(): Storage | null {
-    if (!isPlatformBrowser(this.platformId)) {
-      return null;
-    }
-
+    if (!isPlatformBrowser(this.platformId)) return null;
     return this.document.defaultView?.localStorage ?? null;
   }
 }

@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { EntityApiService } from '../../core/entities/entity-api.service';
 import { ENTITY_DEFINITIONS, entityByPath } from '../../core/entities/entity.definitions';
@@ -16,10 +17,11 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
   templateUrl: './entity-list.page.html',
   styleUrl: './entity-list.page.scss',
 })
-export class EntityListPage {
+export class EntityListPage implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);
   private readonly entityApiService = inject(EntityApiService);
+  private readonly routeSub: Subscription;
 
   readonly definition = signal<EntityDefinition>(ENTITY_DEFINITIONS[0]);
   readonly records = signal<Record<string, unknown>[]>([]);
@@ -39,7 +41,7 @@ export class EntityListPage {
   readonly form: FormGroup = this.formBuilder.group({});
 
   constructor() {
-    this.route.paramMap.subscribe((params) => {
+    this.routeSub = this.route.paramMap.subscribe((params) => {
       const entityPath = params.get('entity') ?? ENTITY_DEFINITIONS[0].path;
       const definition = entityByPath.get(entityPath) ?? ENTITY_DEFINITIONS[0];
       this.definition.set(definition);
@@ -48,9 +50,14 @@ export class EntityListPage {
     });
   }
 
+  ngOnDestroy(): void {
+    this.routeSub.unsubscribe();
+  }
+
   loadRecords(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.successMessage.set(null);
 
     this.entityApiService.list(this.definition()).subscribe({
       next: (records) => {
@@ -60,21 +67,21 @@ export class EntityListPage {
       error: () => {
         this.records.set([]);
         this.loading.set(false);
-        this.errorMessage.set(`Nao foi possivel carregar ${this.definition().title.toLowerCase()}.`);
+        this.errorMessage.set(`Não foi possível carregar ${this.definition().title.toLowerCase()}.`);
       },
     });
   }
 
   openCreate(): void {
     this.editingRecord.set(null);
-    this.resetForm();
+    this.rebuildForm();
     this.modalError.set(null);
     this.showModal.set(true);
   }
 
   openEdit(record: Record<string, unknown>): void {
     this.editingRecord.set(record);
-    this.resetForm(record);
+    this.rebuildForm(record);
     this.modalError.set(null);
     this.showModal.set(true);
   }
@@ -106,9 +113,15 @@ export class EntityListPage {
         this.successMessage.set(`${this.definition().singular} salvo com sucesso.`);
         this.loadRecords();
       },
-      error: () => {
+      error: (err: { error?: { errors?: Record<string, string[]> } }) => {
         this.saving.set(false);
-        this.modalError.set(`Nao foi possivel salvar ${this.definition().singular.toLowerCase()}.`);
+        const errors = err?.error?.errors;
+        if (errors) {
+          const firstError = Object.values(errors).flat()[0];
+          this.modalError.set(firstError ?? `Erro ao salvar ${this.definition().singular.toLowerCase()}.`);
+        } else {
+          this.modalError.set(`Não foi possível salvar ${this.definition().singular.toLowerCase()}.`);
+        }
       },
     });
   }
@@ -116,26 +129,26 @@ export class EntityListPage {
   delete(record: Record<string, unknown>): void {
     const id = String(record['id']);
 
-    if (!id || !confirm(`Confirmar exclusao de ${this.definition().singular.toLowerCase()}?`)) {
+    if (!id || !confirm(`Confirmar exclusão de ${this.definition().singular.toLowerCase()}?`)) {
       return;
     }
 
-    this.entityApiService.delete(this.definition(), id).subscribe({
+    this.entityApiService.remove(this.definition(), id).subscribe({
       next: () => {
         this.successMessage.set(`${this.definition().singular} removido com sucesso.`);
         this.loadRecords();
       },
-      error: () => this.errorMessage.set(`Nao foi possivel remover ${this.definition().singular.toLowerCase()}.`),
+      error: () => this.errorMessage.set(`Não foi possível remover ${this.definition().singular.toLowerCase()}.`),
     });
   }
 
   runAction(record: Record<string, unknown>, action: EntityAction): void {
     this.entityApiService.runAction(this.definition(), action, String(record['id'])).subscribe({
       next: () => {
-        this.successMessage.set('Acao executada com sucesso.');
+        this.successMessage.set('Ação executada com sucesso.');
         this.loadRecords();
       },
-      error: () => this.errorMessage.set('Nao foi possivel executar a acao.'),
+      error: () => this.errorMessage.set('Não foi possível executar a ação.'),
     });
   }
 
@@ -148,37 +161,37 @@ export class EntityListPage {
   }
 
   fieldValue(record: Record<string, unknown>, key: string): unknown {
-    return key.split('.').reduce<unknown>((v, part) => {
-      if (!v || typeof v !== 'object') return '';
-      return (v as Record<string, unknown>)[part];
+    return key.split('.').reduce<unknown>((acc, part) => {
+      if (!acc || typeof acc !== 'object') return '';
+      return (acc as Record<string, unknown>)[part];
     }, record);
   }
 
   formatValue(value: unknown): string {
     if (value === null || value === undefined || value === '') return '-';
-    if (typeof value === 'boolean') return value ? 'Sim' : 'Nao';
+    if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
     if (typeof value === 'number') {
       return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value);
     }
     return String(value);
   }
 
-  private resetForm(record?: Record<string, unknown>): void {
+  private rebuildForm(record?: Record<string, unknown>): void {
     for (const key of Object.keys(this.form.controls)) {
       this.form.removeControl(key);
     }
 
     for (const field of this.definition().fields) {
-      if (this.editingRecord() && field.hideOnEdit) continue;
+      if (record && field.hideOnEdit) continue;
 
       this.form.addControl(
         field.key,
-        this.formBuilder.control(this.initialValue(field, record), this.validators(field)),
+        this.formBuilder.control(this.resolveInitialValue(field, record), this.buildValidators(field)),
       );
     }
   }
 
-  private validators(field: EntityField): ValidatorFn[] {
+  private buildValidators(field: EntityField): ValidatorFn[] {
     const validators: ValidatorFn[] = [];
     if (field.required) validators.push(Validators.required);
     if (field.type === 'email') validators.push(Validators.email);
@@ -187,41 +200,33 @@ export class EntityListPage {
     return validators;
   }
 
-  private initialValue(field: EntityField, record?: Record<string, unknown>): string | number {
-    if (!record) return field.key === 'address.country' ? 'BR' : '';
-    const value = this.fieldValue(record, field.key);
+  private resolveInitialValue(field: EntityField, record?: Record<string, unknown>): string | number {
+    if (!record) return '';
+
+    const value = this.fieldValue(record, field.key) ?? this.resolveFromFlatRecord(record, field.key);
     if (typeof value === 'number') return value;
     return value === null || value === undefined ? '' : String(value);
   }
 
+  private resolveFromFlatRecord(record: Record<string, unknown>, key: string): unknown {
+    // For address.street → try addressStreet or address_street from nested address object
+    const parts = key.split('.');
+    if (parts.length === 2 && parts[0] === 'address') {
+      const nested = record['address'] as Record<string, unknown> | undefined;
+      return nested?.[parts[1]] ?? null;
+    }
+    return record[key] ?? null;
+  }
+
   private buildPayload(): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
+
     for (const field of this.visibleFields()) {
-      const rawValue = this.form.controls[field.key].value;
-      const value = field.type === 'number' && rawValue !== '' ? Number(rawValue) : rawValue;
-      this.assignPayloadValue(payload, field.key, value === '' ? null : value);
+      const raw = this.form.controls[field.key].value;
+      const value = field.type === 'number' && raw !== '' ? Number(raw) : (raw === '' ? null : raw);
+      payload[field.key] = value;
     }
-    return this.removeEmptyObjects(payload);
-  }
 
-  private assignPayloadValue(target: Record<string, unknown>, key: string, value: unknown): void {
-    const parts = key.split('.');
-    let cursor = target;
-    for (const part of parts.slice(0, -1)) {
-      cursor[part] = cursor[part] && typeof cursor[part] === 'object' ? cursor[part] : {};
-      cursor = cursor[part] as Record<string, unknown>;
-    }
-    cursor[parts.at(-1) ?? key] = value;
-  }
-
-  private removeEmptyObjects(value: Record<string, unknown>): Record<string, unknown> {
-    for (const [key, child] of Object.entries(value)) {
-      if (child && typeof child === 'object' && !Array.isArray(child)) {
-        const cleaned = this.removeEmptyObjects(child as Record<string, unknown>);
-        const hasValue = Object.values(cleaned).some((item) => item !== null && item !== '');
-        if (!hasValue) delete value[key];
-      }
-    }
-    return value;
+    return payload;
   }
 }

@@ -1,68 +1,133 @@
 # Sunshine Pratas
 
-Documentacao da aplicacao com foco em arquitetura, padroes e API.
+Sistema de gestão para joalheria — controle de produtos, clientes, fornecedores e transações financeiras.
 
-## Visao geral
+## Stack
 
-Aplicacao web (Angular) consumindo uma API em ASP.NET Core. A API segue uma arquitetura em camadas com separacao clara entre apresentacao, aplicacao, dominio e infraestrutura.
+| Camada    | Tecnologia          |
+|-----------|---------------------|
+| Frontend  | Angular 21          |
+| Backend   | Laravel 11 (PHP 8.4)|
+| Banco     | PostgreSQL 16       |
+| Auth      | JWT (tymon/jwt-auth)|
 
-## Arquitetura (esquete)
-
-```
-+-----------------------------+
-| sunshine-web (Angular)      |
-+--------------+--------------+
-							 |
-							 v
-+-----------------------------+
-| sunshine-api (ASP.NET Core) |
-+--------------+--------------+
-							 |
-							 v
-+-----------------------------+
-| Application (casos de uso)  |
-+--------------+--------------+
-							 |
-							 v
-+-----------------------------+
-| Domain (entidades, VOs)     |
-+--------------+--------------+
-							 |
-							 v
-+-----------------------------+
-| Infrastructure (EF, repos)  |
-+-----------------------------+
-```
-
-## Camadas e responsabilidades
-
-- Api: controllers, autenticacao, middlewares e configuracoes. Ponto de entrada HTTP. Veja [sunshine-api/src/Api/Program.cs](sunshine-api/src/Api/Program.cs) e [sunshine-api/src/Api/Middlewares/ExceptionHandlingMiddleware.cs](sunshine-api/src/Api/Middlewares/ExceptionHandlingMiddleware.cs).
-- Application: regras de orquestracao e servicos de casos de uso, com DTOs e interfaces. Veja [sunshine-api/src/Application/DependencyInjection.cs](sunshine-api/src/Application/DependencyInjection.cs).
-- Domain: entidades e value objects com invariantes. Exemplo em [sunshine-api/src/Domain/Entities/Customer.cs](sunshine-api/src/Domain/Entities/Customer.cs).
-- Infrastructure: persistencia, repositorios, seguranca e integracoes. Registros em [sunshine-api/src/Infrastructure/DependencyInjection.cs](sunshine-api/src/Infrastructure/DependencyInjection.cs).
-
-## Fluxo de requisicao (esquete)
+## Estrutura do repositório
 
 ```
-HTTP
-	|
-	v
-Controller -> Service -> Repository -> DbContext -> SQL Server
-	^               |
-	|               v
-Middleware <---- Domain
+sunshine-pratas/
+├── api/          # API Laravel
+└── sunshine-web/ # Frontend Angular
 ```
 
-## Padroes e principios utilizados
+## Backend — api
 
-- Separacao de camadas (Api, Application, Domain, Infrastructure) com dependencia apontando para dentro (Domain isolado).
-- Dependency Injection com registros centralizados por camada. Veja [sunshine-api/src/Application/DependencyInjection.cs](sunshine-api/src/Application/DependencyInjection.cs) e [sunshine-api/src/Infrastructure/DependencyInjection.cs](sunshine-api/src/Infrastructure/DependencyInjection.cs).
-- Repository e Unit of Work para persistencia e transacoes. Interfaces em [sunshine-api/src/Domain/Repositories](sunshine-api/src/Domain/Repositories) e implementacoes em [sunshine-api/src/Infrastructure/Repositories](sunshine-api/src/Infrastructure/Repositories).
-- Service Layer para casos de uso por contexto (Users, Products, Transactions, etc.).
-- DTOs para contratos de entrada e saida dos endpoints. Exemplos em [sunshine-api/src/Application/Users/DTOs](sunshine-api/src/Application/Users/DTOs).
-- Middleware para tratamento uniforme de erros. Veja [sunshine-api/src/Api/Middlewares/ExceptionHandlingMiddleware.cs](sunshine-api/src/Api/Middlewares/ExceptionHandlingMiddleware.cs).
-- Principios SOLID aplicados na separacao de responsabilidades e interfaces.
+### Padrão de projeto
 
-## Documentacao da API
+```
+HTTP Request
+    │
+    ▼
+Controller          (thin — só orquestra)
+    │
+    ▼
+FormRequest         (validação e autorização de entrada)
+    │
+    ▼
+Action              (uma classe, uma responsabilidade)
+    │
+    ▼
+Eloquent Model      (queries otimizadas com scopes)
+    │
+    ▼
+API Resource        (transformação da saída em camelCase)
+```
 
-- Endpoints completos em [sunshine-web/docs/API.md](sunshine-web/docs/API.md)
+### Estrutura de pastas
+
+```
+app/
+├── Actions/            # Lógica de negócio (CreateProductAction, SettleTransactionAction…)
+├── Enums/              # PHP 8.1 enums com label() em pt-BR
+├── Http/
+│   ├── Controllers/    # Controllers finos — delegam para Actions
+│   ├── Requests/       # Form Requests por entidade
+│   └── Resources/      # API Resources (camelCase para o JS)
+├── Models/             # Eloquent com UUIDs, casts, scopes de busca
+└── Policies/           # Autorização por modelo
+```
+
+### Rodando
+
+```bash
+cd api
+composer install
+cp .env.example .env          # configurar DB_* e JWT_SECRET
+php artisan key:generate
+php artisan jwt:secret
+php artisan migrate --seed    # cria o admin padrão
+php artisan serve --port=8080
+```
+
+Usuário padrão: `admin@sunshine.com` / `admin123`
+
+### Endpoints principais
+
+| Método   | Rota                                  | Descrição                    |
+|----------|---------------------------------------|------------------------------|
+| POST     | /api/auth/login                       | Login — retorna JWT          |
+| POST     | /api/auth/logout                      | Logout                       |
+| GET/PUT  | /api/profile                          | Perfil do usuário logado     |
+| CRUD     | /api/users                            | Usuários (admin)             |
+| CRUD     | /api/customers                        | Clientes                     |
+| CRUD     | /api/products                         | Produtos                     |
+| GET      | /api/products/all                     | Todos os produtos (admin)    |
+| PATCH    | /api/products/{id}/activate           | Ativar produto               |
+| PATCH    | /api/products/{id}/deactivate         | Desativar produto            |
+| CRUD     | /api/suppliers                        | Fornecedores                 |
+| CRUD     | /api/transactions                     | Transações financeiras       |
+| PATCH    | /api/transactions/{id}/settle         | Marcar transação como liquidada |
+
+Todas as rotas (exceto login e listagem pública de produtos) exigem `Authorization: Bearer <token>`.
+
+---
+
+## Frontend — sunshine-web
+
+### Estrutura de pastas
+
+```
+src/app/
+├── core/
+│   ├── auth/           # AuthService, AuthGuard
+│   ├── entities/       # Definições genéricas de CRUD (entity.definitions.ts)
+│   ├── http/           # Interceptor JWT
+│   ├── models/         # Interfaces TypeScript por domínio
+│   │   ├── auth.model.ts
+│   │   ├── user.model.ts
+│   │   ├── customer.model.ts
+│   │   ├── product.model.ts
+│   │   ├── supplier.model.ts
+│   │   └── transaction.model.ts
+│   └── services/       # Serviços tipados por entidade
+│       ├── api.service.ts          # Base com wrapper {data}
+│       ├── user.service.ts
+│       ├── customer.service.ts
+│       ├── product.service.ts
+│       ├── supplier.service.ts
+│       ├── transaction.service.ts
+│       └── profile.service.ts
+├── pages/
+│   ├── login/
+│   ├── profile/
+│   └── entity-list/    # CRUD genérico usado por todas as entidades
+└── shared/
+    └── components/     # sidebar, empty-state, icon
+```
+
+### Rodando
+
+```bash
+cd sunshine-web
+npm install
+npm start               # http://localhost:4200
+```

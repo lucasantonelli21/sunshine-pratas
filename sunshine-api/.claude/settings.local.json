@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\lucas\\\\OneDrive\\\\Documentos\\\\Sunshine-Pratas\\\\sunshine-api\" -Recurse -Directory)",
-      "Bash(Select-Object FullName)",
-      "Bash(Sort-Object FullName)"
-    ]
-  }
-}
