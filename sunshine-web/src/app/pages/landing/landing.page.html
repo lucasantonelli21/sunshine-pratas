@@ -7,7 +7,9 @@
 
     <nav class="navbar-links" aria-label="Navegação">
       <button type="button" (click)="scrollTo('colecao')">Coleção</button>
-      <button type="button" (click)="scrollTo('diferenciais')">Por que nós</button>
+      <button type="button" (click)="scrollTo('diferenciais')">
+        Por que nós
+      </button>
       <button type="button" (click)="scrollTo('contato')">Contato</button>
     </nav>
 
@@ -18,7 +20,12 @@
       </a>
     </div>
 
-    <button type="button" class="menu-toggle" (click)="toggleMenu()" aria-label="Menu">
+    <button
+      type="button"
+      class="menu-toggle"
+      (click)="toggleMenu()"
+      aria-label="Menu"
+    >
       <app-icon name="menu" [size]="22" />
     </button>
   </div>
@@ -26,14 +33,15 @@
 
 <!-- MOBILE SIDEBAR -->
 @if (mobileMenuOpen()) {
-  <div class="mobile-overlay" (click)="toggleMenu()" aria-hidden="true"></div>
+<div class="mobile-overlay" (click)="toggleMenu()" aria-hidden="true"></div>
 }
-<aside class="mobile-sidebar" [class.open]="mobileMenuOpen()" aria-label="Menu mobile">
+<aside
+  class="mobile-sidebar"
+  [class.open]="mobileMenuOpen()"
+  aria-label="Menu mobile"
+>
   <div class="mobile-sidebar-header">
     <img src="sunshine-logo.png" alt="SunShine Pratas" />
-    <button type="button" class="mobile-sidebar-close" (click)="toggleMenu()" aria-label="Fechar menu">
-      <app-icon name="x" [size]="22" />
-    </button>
   </div>
 
   <nav class="mobile-sidebar-nav">
@@ -68,22 +76,30 @@
       <em>conta histórias</em>
     </h1>
     <p class="hero-sub">
-      Peças únicas em prata 925 e ouro, criadas com cuidado para
-      momentos que merecem ser lembrados para sempre.
+      Peças únicas em prata 925 e ouro, criadas com cuidado para momentos que
+      merecem ser lembrados para sempre.
     </p>
     <div class="hero-actions">
-      <button type="button" class="btn-hero-primary" (click)="scrollTo('colecao')">
+      <button
+        type="button"
+        class="btn-hero-primary"
+        (click)="scrollTo('colecao')"
+      >
         Ver coleção
         <app-icon name="arrow-down" [size]="18" />
       </button>
-      <button type="button" class="btn-hero-ghost" (click)="scrollTo('diferenciais')">
+      <button
+        type="button"
+        class="btn-hero-ghost"
+        (click)="scrollTo('diferenciais')"
+      >
         Nossa história
       </button>
     </div>
   </div>
   <div class="hero-visual">
     <div class="hero-image-wrap">
-      <img src="sunshine-logo-clean.png" alt="SunShine Pratas" class="hero-logo" />
+      <img src="sunshine-logo.png" alt="SunShine Pratas" class="hero-logo" />
     </div>
     <div class="hero-badge hero-badge-1">
       <app-icon name="award" [size]="18" />
@@ -106,47 +122,48 @@
     </div>
 
     @if (loadingProducts()) {
-      <div class="products-loading">
-        <div class="loading-spinner"></div>
-        <span>Carregando coleção...</span>
-      </div>
+    <div class="products-loading">
+      <div class="loading-spinner"></div>
+      <span>Carregando coleção...</span>
+    </div>
     } @else if (products().length === 0) {
-      <div class="products-empty">
-        <app-icon name="gem" [size]="48" />
-        <p>Em breve novidades incríveis</p>
-      </div>
+    <div class="products-empty">
+      <app-icon name="gem" [size]="48" />
+      <p>Em breve novidades incríveis</p>
+    </div>
     } @else {
-      <div class="products-grid">
-        @for (product of products(); track product.id) {
-          <article class="product-card">
-            <div class="product-image">
-              @if (firstImage(product); as url) {
-                <img [src]="url" [alt]="product.name" loading="lazy" />
-              } @else {
-                <div class="product-image-placeholder">
-                  <app-icon name="gem" [size]="40" />
-                </div>
-              }
-              <div class="product-badge">{{ product.typeLabel }}</div>
-            </div>
-            <div class="product-body">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <div class="product-meta">
-                <span>{{ product.materialLabel }}</span>
-                <span>{{ product.genderLabel }}</span>
-              </div>
-              @if (product.description) {
-                <p class="product-desc">{{ product.description }}</p>
-              }
-              <div class="product-footer">
-                <span class="product-price">
-                  {{ product.price | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
-                </span>
-              </div>
-            </div>
-          </article>
-        }
-      </div>
+    <div class="products-grid">
+      @for (product of products(); track product.id) {
+      <article class="product-card">
+        <div class="product-image">
+          @if (firstImage(product); as url) {
+          <img [src]="url" [alt]="product.name" loading="lazy" />
+          } @else {
+          <div class="product-image-placeholder">
+            <app-icon name="gem" [size]="40" />
+          </div>
+          }
+          <div class="product-badge">{{ product.typeLabel }}</div>
+        </div>
+        <div class="product-body">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <div class="product-meta">
+            <span>{{ product.materialLabel }}</span>
+            <span>{{ product.genderLabel }}</span>
+          </div>
+          @if (product.description) {
+          <p class="product-desc">{{ product.description }}</p>
+          }
+          <div class="product-footer">
+            <span class="product-price">
+              {{ product.price | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+              }}
+            </span>
+          </div>
+        </div>
+      </article>
+      }
+    </div>
     }
   </div>
 </section>
@@ -165,7 +182,10 @@
           <app-icon name="gem" [size]="28" />
         </div>
         <h3>Materiais certificados</h3>
-        <p>Trabalhamos exclusivamente com prata 925, ouro 18k e materiais com procedência garantida.</p>
+        <p>
+          Trabalhamos exclusivamente com prata 925, ouro 18k e materiais com
+          procedência garantida.
+        </p>
       </div>
 
       <div class="feature-card">
@@ -173,7 +193,10 @@
           <app-icon name="heart" [size]="28" />
         </div>
         <h3>Feito à mão</h3>
-        <p>Cada peça é criada artesanalmente, garantindo unicidade e atenção aos mínimos detalhes.</p>
+        <p>
+          Cada peça é criada artesanalmente, garantindo unicidade e atenção aos
+          mínimos detalhes.
+        </p>
       </div>
 
       <div class="feature-card">
@@ -181,7 +204,10 @@
           <app-icon name="shield-check" [size]="28" />
         </div>
         <h3>Garantia de 1 ano</h3>
-        <p>Todas as peças acompanham garantia contra defeitos de fabricação por 12 meses.</p>
+        <p>
+          Todas as peças acompanham garantia contra defeitos de fabricação por
+          12 meses.
+        </p>
       </div>
 
       <div class="feature-card">
@@ -189,7 +215,10 @@
           <app-icon name="package" [size]="28" />
         </div>
         <h3>Embalagem especial</h3>
-        <p>Enviamos em caixas elegantes, perfeitas para presentes ou para guardar sua joia com cuidado.</p>
+        <p>
+          Enviamos em caixas elegantes, perfeitas para presentes ou para guardar
+          sua joia com cuidado.
+        </p>
       </div>
     </div>
   </div>
@@ -205,7 +234,12 @@
     </div>
 
     <div class="contact-grid">
-      <a class="contact-card" href="https://wa.me/55" target="_blank" rel="noopener">
+      <a
+        class="contact-card"
+        href="https://wa.me/55"
+        target="_blank"
+        rel="noopener"
+      >
         <div class="contact-icon">
           <app-icon name="message-circle" [size]="28" />
         </div>
@@ -227,7 +261,12 @@
         <app-icon name="arrow-right" [size]="18" class="contact-arrow" />
       </a>
 
-      <a class="contact-card" href="https://instagram.com/sunshinepratasc" target="_blank" rel="noopener">
+      <a
+        class="contact-card"
+        href="https://instagram.com/sunshinepratasc"
+        target="_blank"
+        rel="noopener"
+      >
         <div class="contact-icon">
           <app-icon name="instagram" [size]="28" />
         </div>
@@ -244,10 +283,11 @@
 <!-- FOOTER -->
 <footer class="site-footer">
   <div class="footer-inner">
-    <div class="footer-brand">
-      <img src="sunshine-logo.png" alt="SunShine Pratas" />
-    </div>
-    <p class="footer-copy">© {{ currentYear }} SunShine Pratas. Todos os direitos reservados.</p>
-    <a routerLink="/painel/login" class="footer-painel">Painel Administrativo</a>
+    <p class="footer-copy">
+      © {{ currentYear }} SunShine Pratas. Todos os direitos reservados.
+    </p>
+    <a routerLink="/painel/login" class="footer-painel"
+      >Painel Administrativo</a
+    >
   </div>
 </footer>
