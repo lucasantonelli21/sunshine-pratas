@@ -10,6 +10,7 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController extends Controller
@@ -78,8 +79,26 @@ class ProductController extends Controller
     {
         $this->authorize('delete', $product);
 
+        $paths = $product->images()->whereNotNull('path')->pluck('path');
         $product->delete();
+        $paths->each(fn($path) => Storage::disk('public')->delete($path));
 
         return response()->json(null, 204);
+    }
+
+    public function uploadImage(Request $request): JsonResponse
+    {
+        $this->authorize('create', Product::class);
+
+        $request->validate([
+            'image' => ['required', 'image', 'max:8192'],
+        ]);
+
+        $path = $request->file('image')->store('products', 'public');
+
+        return response()->json([
+            'url'  => Storage::disk('public')->url($path),
+            'path' => $path,
+        ]);
     }
 }

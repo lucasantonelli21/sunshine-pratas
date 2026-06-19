@@ -1,18 +1,19 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 
+import { ProductService } from '../../../core/services/product.service';
 import { IconComponent } from '../icon/icon.component';
 
 export interface ManagedImage {
   id: string;
   url: string;
+  path?: string;
   order: number;
 }
 
 @Component({
   selector: 'app-image-manager',
   standalone: true,
-  imports: [FormsModule, IconComponent],
+  imports: [IconComponent],
   template: `
     <div class="image-manager">
       <div class="image-list" [class.empty]="images.length === 0">
@@ -46,18 +47,21 @@ export interface ManagedImage {
         }
       </div>
 
-      <div class="add-image">
-        <input
-          type="url"
-          [(ngModel)]="newUrl"
-          placeholder="https://exemplo.com/imagem.jpg"
-          (keydown.enter)="$event.preventDefault(); add()"
-        />
-        <button type="button" (click)="add()" [disabled]="!newUrl.trim()">
-          <app-icon name="plus" [size]="16" />
-          Adicionar
-        </button>
+      <div class="upload-area" (click)="fileInput.click()" (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+        @if (uploading()) {
+          <div class="upload-spinner"></div>
+          <span>Enviando...</span>
+        } @else {
+          <app-icon name="upload-cloud" [size]="24" />
+          <span>Clique ou arraste uma imagem aqui</span>
+          <span class="upload-hint">JPG, PNG, WEBP — máx. 8MB</span>
+        }
+        <input #fileInput type="file" accept="image/*" (change)="onFileChange($event)" style="display:none" />
       </div>
+
+      @if (uploadError()) {
+        <p class="upload-error">{{ uploadError() }}</p>
+      }
     </div>
   `,
   styles: [`
@@ -196,57 +200,49 @@ export interface ManagedImage {
       }
     }
 
-    .add-image {
+    .upload-area {
       display: flex;
-      gap: 8px;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 24px 16px;
+      border: 2px dashed #d0d5dd;
+      border-radius: 8px;
+      background: #f9fafb;
+      color: #667085;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
 
-      input {
-        flex: 1;
-        min-height: 38px;
-        padding: 8px 12px;
-        border: 1px solid #cfd6e2;
-        border-radius: 6px;
-        font: inherit;
-        font-size: 0.875rem;
-        color: #101828;
-        background: #fff;
-
-        &:focus {
-          outline: 3px solid color-mix(in srgb, var(--color-primary-500) 30%, transparent);
-          border-color: var(--color-primary-600);
-        }
-
-        &::placeholder {
-          color: #98a2b3;
-        }
+      &:hover {
+        border-color: var(--color-primary-400);
+        background: #f5f8ff;
+        color: var(--color-primary-700);
       }
+    }
 
-      button {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        min-height: 38px;
-        padding: 0 14px;
-        border: 0;
-        border-radius: 6px;
-        background: var(--color-primary-700);
-        color: #fff;
-        font: inherit;
-        font-size: 0.875rem;
-        font-weight: 600;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: background 0.12s;
+    .upload-hint {
+      font-size: 0.75rem;
+      color: #98a2b3;
+    }
 
-        &:hover:not(:disabled) {
-          background: var(--color-primary-800);
-        }
+    .upload-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e0e0e0;
+      border-top-color: var(--color-primary-600);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
 
-        &:disabled {
-          opacity: 0.5;
-          cursor: default;
-        }
-      }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .upload-error {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: #b42318;
     }
   `],
 })
@@ -254,13 +250,37 @@ export class ImageManagerComponent {
   @Input() images: ManagedImage[] = [];
   @Output() imagesChange = new EventEmitter<ManagedImage[]>();
 
-  newUrl = '';
+  private readonly productService = inject(ProductService);
 
-  add(): void {
-    const url = this.newUrl.trim();
-    if (!url) return;
-    this.emit([...this.images, { id: crypto.randomUUID(), url, order: this.images.length }]);
-    this.newUrl = '';
+  readonly uploading = signal(false);
+  readonly uploadError = signal('');
+
+  onFileChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    (event.target as HTMLInputElement).value = '';
+    if (file) this.upload(file);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.upload(file);
+  }
+
+  private upload(file: File): void {
+    this.uploading.set(true);
+    this.uploadError.set('');
+
+    this.productService.uploadImage(file).subscribe({
+      next: (res) => {
+        this.emit([...this.images, { id: crypto.randomUUID(), url: res.url, path: res.path, order: this.images.length }]);
+        this.uploading.set(false);
+      },
+      error: () => {
+        this.uploadError.set('Erro ao enviar imagem. Tente novamente.');
+        this.uploading.set(false);
+      },
+    });
   }
 
   moveUp(index: number): void {

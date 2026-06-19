@@ -38,7 +38,7 @@ export interface CreateProductPayload {
   gender: ProductGender;
   material: ProductMaterial;
   stock: number;
-  images?: Array<{ url: string; order?: number }>;
+  images?: Array<{ url?: string; path?: string; order?: number }>;
 }
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;

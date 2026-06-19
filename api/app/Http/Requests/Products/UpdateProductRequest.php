@@ -26,7 +26,8 @@ class UpdateProductRequest extends FormRequest
             'material' => ['sometimes', new Enum(ProductMaterial::class)],
             'stock' => ['sometimes', 'integer', 'min:0'],
             'images' => ['nullable', 'array'],
-            'images.*.url' => ['required_with:images', 'string', 'max:500'],
+            'images.*.url' => ['nullable', 'string', 'max:500'],
+            'images.*.path' => ['nullable', 'string', 'max:500'],
             'images.*.order' => ['nullable', 'integer', 'min:0'],
         ];
     }

@@ -15,7 +15,8 @@ class CreateProductAction
             $product->images()->createMany(
                 collect($request->images)
                     ->map(fn($img, $idx) => [
-                        'url' => $img['url'],
+                        'url'   => $img['url'] ?? null,
+                        'path'  => $img['path'] ?? null,
                         'order' => $img['order'] ?? $idx,
                     ])
                     ->all()

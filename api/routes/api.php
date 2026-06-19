@@ -23,6 +23,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('customers', CustomerController::class);
 
     Route::get('/products/all', [ProductController::class, 'all']);
+    Route::post('/products/images/upload', [ProductController::class, 'uploadImage']);
     Route::patch('/products/{product}/activate', [ProductController::class, 'activate']);
     Route::patch('/products/{product}/deactivate', [ProductController::class, 'deactivate']);
     Route::apiResource('products', ProductController::class);

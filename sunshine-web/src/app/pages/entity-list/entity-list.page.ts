@@ -256,7 +256,7 @@ export class EntityListPage implements OnDestroy {
 
     const hasImagesField = this.definition().fields.some((f) => f.type === 'images');
     if (hasImagesField) {
-      payload['images'] = this.pendingImages().map((img, i) => ({ url: img.url, order: i }));
+      payload['images'] = this.pendingImages().map((img, i) => ({ url: img.url, path: img.path, order: i }));
     }
 
     return payload;

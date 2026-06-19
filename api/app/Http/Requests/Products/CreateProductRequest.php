@@ -26,7 +26,8 @@ class CreateProductRequest extends FormRequest
             'material' => ['required', new Enum(ProductMaterial::class)],
             'stock' => ['required', 'integer', 'min:0'],
             'images' => ['nullable', 'array'],
-            'images.*.url' => ['required', 'string', 'max:500'],
+            'images.*.url' => ['nullable', 'string', 'max:500'],
+            'images.*.path' => ['nullable', 'string', 'max:500'],
             'images.*.order' => ['nullable', 'integer', 'min:0'],
         ];
     }
